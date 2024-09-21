@@ -1,0 +1,130 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+struct node
+{
+    char value;
+    struct node *next;
+};
+struct myStack
+{
+    struct node *pointer;
+    int count;
+};
+struct myStack *create_stack()
+{
+    struct myStack *temp = (struct myStack *)malloc(sizeof(struct myStack));
+    temp->pointer = NULL;
+    temp->count = 0;
+    return temp;
+}
+void push(struct myStack *st, char value)
+{
+    if (!st) return;
+    struct node *temp = (struct node *)malloc(sizeof(struct node));
+    temp->value = value;
+    if (!st->pointer) { temp->next = NULL; st->pointer = temp; }
+    else { temp->next = st->pointer; st->pointer = temp; }
+    st->count++;
+}
+ 
+char pop(struct myStack *st)
+{
+    if (!st || !st->pointer) return 0;
+    char value = st->pointer->value;
+    struct node *del = st->pointer;
+    st->pointer = st->pointer->next;
+    free(del);
+    st->count--;
+    return value;
+}
+char peek(struct myStack *st)
+{
+    if (!st || !st->pointer) return 0;
+    return st->pointer->value;
+}
+ 
+int stack_size(struct myStack *st)
+{
+    return st->count;
+}
+ 
+int is_empty(struct myStack *st)
+{
+    return !st->pointer;
+}
+int ex(char x){
+    switch (x){
+        case '+': return 2;
+        case '-': return 2;
+        case '*': return 3;
+        case '/': return 3;
+        case '(': return 1;
+    }
+}
+ 
+int main()
+{
+    struct myStack *st = create_stack();
+    
+    char str[] = "(1-2)+(1-3*(2-6)/3)";
+    char ans[100];
+    int j = 0;
+
+    
+    
+    for (int i = 0; i < strlen(str); i++){
+        if (isdigit(str[i])) {ans[j++] = str[i];}
+        else{
+            if (is_empty(st)) {push(st,str[i]);}
+            //printf("%d",ex(str[i]));
+            else{
+                switch (str[i]){
+                case '+':
+                    while (ex(peek(st)) >= 2 && !is_empty(st))
+                    {
+                        ans[j++] = pop(st);
+                    }
+                    push(st,'+');
+                    break;
+                case '-':
+                    while (ex(peek(st)) >= 2 && !is_empty(st))
+                    {
+                        ans[j++] = pop(st);
+                    }
+                    push(st,'-');
+                    break;
+                case '*':
+                    while (ex(peek(st)) >= 3 && !is_empty(st))
+                    {
+                        ans[j++] = pop(st);
+                    }
+                    push(st,'*');
+                    break;
+                case '/':
+                    while (ex(peek(st)) >= 3 && !is_empty(st))
+                    {
+                        ans[j++] = pop(st);
+                    }
+                    push(st,'/');
+                    break;
+                case '(':
+                    push(st,'(');
+                    break;
+                case ')':
+                    while(peek(st) != '('){
+                        ans[j++] = pop(st);
+                    }
+                    pop(st);
+                    break;
+                }    
+            }
+        }
+    }
+    while(!is_empty(st)){
+        ans[j++] = pop(st);
+    }
+    printf("%s", ans);
+    return 0;
+}
